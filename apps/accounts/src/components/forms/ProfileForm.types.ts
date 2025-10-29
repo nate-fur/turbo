@@ -1,4 +1,4 @@
-export type FormErrors = {
+export interface FormErrors {
   firstName?: string;
   lastName?: string;
   dob?: string;
@@ -7,4 +7,4 @@ export type FormErrors = {
   currentPassword?: string;
   password?: string;
   passwordConfirmation?: string;
-};
+}

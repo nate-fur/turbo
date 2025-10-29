@@ -17,9 +17,9 @@ import {
   Users,
 } from "@acme/ui/icons";
 
-type IIndexProps = {
+interface IIndexProps {
   params: Promise<{ locale: string }>;
-};
+}
 
 export async function generateMetadata(props: IIndexProps): Promise<Metadata> {
   const { locale } = await props.params;

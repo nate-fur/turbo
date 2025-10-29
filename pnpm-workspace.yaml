@@ -8,7 +8,7 @@ catalog:
   "@tailwindcss/postcss": ^4.1.16
   "@types/node": ^22.18.12
   eslint: ^9.38.0
-  next: 16.0.1
+  next: ^15.4.6
   prettier: ^3.6.2
   tailwindcss: ^4.1.16
   typescript: ^5.9.3

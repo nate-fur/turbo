@@ -3,7 +3,7 @@ import { decodeJwt } from "jose";
 
 import { COOKIE_NAMES } from "./CookieConfig";
 
-export type SessionValidationResult = {
+export interface SessionValidationResult {
   isValid: boolean;
   isExpired: boolean;
   user?: {
@@ -13,7 +13,7 @@ export type SessionValidationResult = {
     roles: string[];
   };
   error?: string;
-};
+}
 
 /**
  * Validates the session token from the wildcard cookie set by accounts.domain.com
@@ -107,8 +107,8 @@ export function checkUserRoles(
 export function getLoginRedirectUrl(
   accountsBaseUrl: string,
   vendorsBaseUrl: string,
-  locale: string = "en",
-  currentPath: string = "/",
+  locale = "en",
+  currentPath = "/",
 ): string {
   const loginUrl = new URL("/signin", accountsBaseUrl);
 

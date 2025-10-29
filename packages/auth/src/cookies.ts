@@ -1,3 +1,7 @@
+import { authEnv } from "../env";
+
+const env = authEnv();
+
 export interface CookieOptions {
   httpOnly?: boolean;
   secure?: boolean;
@@ -29,12 +33,11 @@ export function getAuthCookieOptions(
 ): CookieOptions {
   return {
     httpOnly, // Prevents XSS attacks when true
-    secure: process.env.NODE_ENV === "production", // Only use HTTPS in production
+    secure: env.NODE_ENV === "production", // Only use HTTPS in production
     sameSite: "lax", // Allow cross-site requests from same site
     path: "/", // Available on all paths
     domain:
-      cookieDomain ??
-      (process.env.NODE_ENV === "production" ? undefined : undefined),
+      cookieDomain ?? (env.NODE_ENV === "production" ? undefined : undefined),
     ...(maxAge && { maxAge }),
   };
 }
@@ -48,8 +51,7 @@ export function getClearCookieOptions(cookieDomain?: string): CookieOptions {
   return {
     path: "/",
     domain:
-      cookieDomain ??
-      (process.env.NODE_ENV === "production" ? undefined : undefined),
+      cookieDomain ?? (env.NODE_ENV === "production" ? undefined : undefined),
     maxAge: 0,
   };
 }

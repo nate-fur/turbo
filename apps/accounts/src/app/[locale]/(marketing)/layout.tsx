@@ -61,7 +61,7 @@ export default function Layout(props: {
       <TopNav>
         <VendorLogo />
         <div className="flex items-center gap-4">
-          <GreetingLabel name={user?.firstName || ""} />
+          <GreetingLabel name={user?.firstName ?? ""} />
           <SnowgroupLogo />
           <UserDropdown
             onLogout={async () => {
@@ -69,9 +69,9 @@ export default function Layout(props: {
               router.push("/signin");
             }}
             user={{
-              name: user?.firstName + " " + user?.lastName || "",
-              email: user?.email || "",
-              logo: { url: user?.logoURL || "", name: user?.name || "" },
+              name: user?.firstName + " " + (user?.lastName ?? ""),
+              email: user?.email ?? "",
+              logo: { url: user?.logoURL ?? "", name: user?.name ?? "" },
             }}
           />
         </div>
@@ -79,7 +79,7 @@ export default function Layout(props: {
         <MobileMenu
           tabs={[]}
           activeTab={""}
-          onTabClick={function (href: string): void {
+          onTabClick={function (_href: string): void {
             throw new Error("Function not implemented.");
           }}
         />
@@ -101,7 +101,7 @@ export default function Layout(props: {
                   const segments = window.location.pathname
                     .split("/")
                     .filter(Boolean);
-                  const locale = segments[0] || "en";
+                  const locale = segments[0] ?? "en";
                   window.location.href = `/${locale}/signin`;
                 } else if (item.url && item.url !== "#") {
                   router.push(item.url);

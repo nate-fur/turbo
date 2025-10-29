@@ -13,19 +13,6 @@ import {
 } from "@acme/ui/components/sidebar";
 import { ShoppingCart, Users } from "@acme/ui/icons";
 
-type User = {
-  id: number;
-  documentId: string;
-  name: string;
-  email?: string;
-  logo: {
-    id: number;
-    documentId: string;
-    url: string;
-    name: string;
-  };
-};
-
 // Sales sidebar items from configs.tsx
 const sidebarItems = [
   {

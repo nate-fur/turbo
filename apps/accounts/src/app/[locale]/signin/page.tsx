@@ -16,7 +16,7 @@ export default function SignInPage() {
   const { login, user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/";
+  const next = searchParams.get("next") ?? "/";
 
   const t = useTranslations("SignIn");
 

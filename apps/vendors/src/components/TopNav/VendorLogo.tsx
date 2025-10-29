@@ -5,13 +5,13 @@ import Image from "next/image";
 // This needs to be cleaned up and resolved with the DNS setup for local dev inside of docker containers.
 // The api.mysnowclub.local domain should be properly resolvable from within the vendors container.
 
-type VendorLogoProps = {
+interface VendorLogoProps {
   logoUrl?: string;
   width?: number;
   height?: number;
   style?: React.CSSProperties;
   renderFallback?: boolean;
-};
+}
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||

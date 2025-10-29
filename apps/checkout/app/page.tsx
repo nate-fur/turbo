@@ -128,7 +128,6 @@ import { Env } from "../src/libs/Env";
 
 export default function ShowcasePage() {
   const [sliderValue, setSliderValue] = useState([50]);
-  const [isOpen, setIsOpen] = useState(false);
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("/sales");
   const { theme: currentTheme, setTheme } = useTheme();
@@ -146,14 +145,14 @@ export default function ShowcasePage() {
             <div className="flex justify-center gap-4">
               <Button asChild>
                 <Link
-                  href={Env.NEXT_PUBLIC_ACCOUNTS_URL || "http://localhost:3001"}
+                  href={Env.NEXT_PUBLIC_ACCOUNTS_URL ?? "http://localhost:3001"}
                 >
                   Go to Accounts
                 </Link>
               </Button>
               <Button asChild>
                 <Link
-                  href={Env.NEXT_PUBLIC_VENDORS_URL || "http://localhost:3002"}
+                  href={Env.NEXT_PUBLIC_VENDORS_URL ?? "http://localhost:3002"}
                 >
                   Go to Vendors
                 </Link>

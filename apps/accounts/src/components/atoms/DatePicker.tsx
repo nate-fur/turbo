@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { TextFieldProps } from "@mui/material/TextField";
+import type { TextFieldProps } from "@mui/material/TextField";
+import type { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
 interface DatePickerFieldProps {
   label?: string;

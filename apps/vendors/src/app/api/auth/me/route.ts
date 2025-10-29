@@ -24,7 +24,7 @@ export async function GET() {
     if (vendorPayloadCookie?.value) {
       try {
         const vendorPayload = JSON.parse(vendorPayloadCookie.value);
-        logoURL = vendorPayload.logoURL || "";
+        logoURL = vendorPayload.logoURL ?? "";
       } catch {
         // Ignore parsing errors
       }
@@ -35,7 +35,7 @@ export async function GET() {
       name: sessionResult.user.name,
       email: sessionResult.user.email,
       logoURL,
-      roles: sessionResult.user.roles || [],
+      roles: sessionResult.user.roles ?? [],
     };
 
     return NextResponse.json({ user: userInfo });

@@ -3,11 +3,11 @@
 import { Button } from "@/components/atoms/Button";
 import { Box } from "@mui/material";
 
-type Props = {
+interface Props {
   onSubmit: () => void;
   onCancel: () => void;
   disabled?: boolean;
-};
+}
 
 export function FormActions({ onSubmit, onCancel, disabled = false }: Props) {
   return (

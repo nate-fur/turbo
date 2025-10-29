@@ -12,9 +12,9 @@ import {
 } from "@acme/ui/components/card";
 import { BarChart3, Shield, Store, Users } from "@acme/ui/icons";
 
-type IIndexProps = {
-  params: Promise<{ locale: string; palette: any }>;
-};
+interface IIndexProps {
+  params: Promise<{ locale: string; palette: unknown }>;
+}
 
 export async function generateMetadata(props: IIndexProps): Promise<Metadata> {
   const { locale } = await props.params;

@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const params = useParams();
-  const locale = (params?.locale as string) || "en"; // Fallback to 'en' if locale is not available
+  const locale = (params?.locale as string) ?? "en"; // Fallback to 'en' if locale is not available
   const [messages, setMessages] = useState<any>(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function RootLayout({
       }
     }
 
-    loadMessages();
+    void loadMessages();
   }, [locale]);
 
   if (!messages) {

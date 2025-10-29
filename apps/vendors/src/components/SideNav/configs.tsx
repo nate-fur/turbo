@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import AssessmentOutlined from "@mui/icons-material/AssessmentOutlined";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DashboardOutlined from "@mui/icons-material/DashboardOutlined";

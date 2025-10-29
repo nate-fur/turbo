@@ -54,7 +54,7 @@ export default function Layout(props: {
         console.error(error);
       }
     }
-    getVendorData();
+    void getVendorData();
   }, []);
 
   const onTabClick = (href: string) => {
@@ -91,14 +91,14 @@ export default function Layout(props: {
             <UserDropdown
               onLogout={() => {
                 console.log("Logout clicked");
-                logout();
+                void logout();
               }}
               user={{
                 name: user.name,
-                email: user.email || "",
+                email: user.email ?? "",
                 logo: {
-                  url: user.logo?.url || "",
-                  name: user.logo?.name || "",
+                  url: user.logo?.url ?? "",
+                  name: user.logo?.name ?? "",
                 },
               }}
             />

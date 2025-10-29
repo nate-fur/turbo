@@ -1,21 +1,21 @@
 "use client";
 
-import * as React from "react";
+import type * as React from "react";
 import { Link, usePathname } from "@/libs/I18nNavigation";
 import { theme } from "@/providers/Theme";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { useLocale, useTranslations } from "next-intl";
 
-type TabItem = {
+interface TabItem {
   label: string;
   href: string;
   badge?: number;
-};
+}
 
-type NavigationTabsProps = {
+interface NavigationTabsProps extends React.ComponentProps<typeof Tabs> {
   orientation?: "horizontal" | "vertical";
   sx?: React.CSSProperties;
-} & React.ComponentProps<typeof Tabs>;
+}
 
 export default function NavigationTabs({
   orientation = "horizontal",

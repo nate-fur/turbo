@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { Box, Typography } from "@mui/material";
 
-type GreetingLabelProps = {
+interface GreetingLabelProps {
   labelText?: string;
   sx?: object;
   height?: number;
-};
+}
 
 export const GreetingLabel = ({
   labelText,

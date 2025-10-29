@@ -4,11 +4,11 @@ import { Button } from "@/components/atoms/Button";
 import { Typography } from "@/components/atoms/Typography";
 import { Box } from "@mui/material";
 
-type Props = {
+interface Props {
   title: string;
   onEdit?: () => void;
   showEdit?: boolean;
-};
+}
 
 export function ProfileSectionHeaders({
   title,

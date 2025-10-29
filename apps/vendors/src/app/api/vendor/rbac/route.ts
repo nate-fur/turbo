@@ -22,8 +22,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Extract sb_access token from cookies
-    const cookies = request.headers.get("cookie") || "";
-    const sbAccessMatch = cookies.match(/sb_access=([^;]+)/);
+    const cookies = request.headers.get("cookie") ?? "";
+    const sbAccessRegex = /sb_access=([^;]+)/;
+    const sbAccessMatch = sbAccessRegex.exec(cookies);
     const sbAccessToken = sbAccessMatch ? sbAccessMatch[1] : null;
 
     if (!sbAccessToken) {

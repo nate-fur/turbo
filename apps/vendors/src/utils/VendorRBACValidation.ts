@@ -1,4 +1,4 @@
-export type VendorRBACResult = {
+export interface VendorRBACResult {
   isValid: boolean;
   user?: {
     id: string;
@@ -12,7 +12,7 @@ export type VendorRBACResult = {
     };
   };
   error?: string;
-};
+}
 
 /**
  * Validates user RBAC permissions by querying the backend on page reload
@@ -33,7 +33,7 @@ const validateVendorRBACViaAPIRoute = async (): Promise<VendorRBACResult> => {
       const errorData = await response.json().catch(() => ({}));
       return {
         isValid: false,
-        error: `API route validation failed: ${response.status} - ${errorData.error || "Unknown error"}`,
+        error: `API route validation failed: ${response.status} - ${errorData.error ?? "Unknown error"}`,
       };
     }
 
@@ -77,5 +77,5 @@ export async function getCurrentVendor(): Promise<{
   status: string;
 } | null> {
   const result = await validateVendorRBAC();
-  return result.user?.vendor || null;
+  return result.user?.vendor ?? null;
 }

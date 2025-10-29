@@ -10,13 +10,13 @@ type VendorInfo = {
   status: string;
 } | null;
 
-export type UseVendorRBACResult = {
+export interface UseVendorRBACResult {
   isValidating: boolean;
   isValid: boolean | null;
   vendor: VendorInfo;
   error: string | null;
   revalidate: () => Promise<void>;
-};
+}
 
 /**
  * Hook to validate vendor RBAC permissions on page load/reload
@@ -50,15 +50,15 @@ export function useVendorRBAC(
     try {
       const result = await validateVendorRBAC();
       setIsValid(result.isValid);
-      setVendor(result.user?.vendor || null);
+      setVendor(result.user?.vendor ?? null);
 
       if (!result.isValid) {
-        setError(result.error || "Validation failed");
+        setError(result.error ?? "Validation failed");
 
         if (redirectOnFailure) {
           // Redirect to login/unauthorized page
           const segments = window.location.pathname.split("/").filter(Boolean);
-          const locale = segments[0] || "en";
+          const locale = segments[0] ?? "en";
 
           // Store current path for redirect after login
           sessionStorage.setItem(
@@ -93,7 +93,7 @@ export function useVendorRBAC(
   // Effect to validate on mount
   useEffect(() => {
     if (validateOnMount) {
-      performValidation();
+      void performValidation();
     }
   }, [validateOnMount, performValidation]);
 
@@ -102,7 +102,7 @@ export function useVendorRBAC(
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         // Page became visible again, revalidate permissions
-        performValidation();
+        void performValidation();
       }
     };
 

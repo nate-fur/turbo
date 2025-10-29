@@ -21,25 +21,24 @@ export function useTheme() {
   const setThemeAndSave = (newTheme: Theme) => {
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
+  };
+
+  // Sync theme to DOM when theme or mounted state changes
+  useEffect(() => {
+    if (!mounted) return;
 
     // Apply theme to document
     const root = document.documentElement;
     root.classList.remove("light", "dark");
 
-    if (newTheme === "system") {
+    if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
         : "light";
       root.classList.add(systemTheme);
     } else {
-      root.classList.add(newTheme);
-    }
-  };
-
-  useEffect(() => {
-    if (mounted) {
-      setThemeAndSave(theme);
+      root.classList.add(theme);
     }
   }, [theme, mounted]);
 

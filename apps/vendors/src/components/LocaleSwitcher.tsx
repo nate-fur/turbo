@@ -9,11 +9,11 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { useLocale } from "next-intl";
 
-type Props = {
+interface Props {
   theme?: ThemeType;
   sx?: object;
   size?: "small" | "medium" | "large";
-};
+}
 
 export const LocaleSwitcher = ({ sx, size = "small", theme }: Props) => {
   const router = useRouter();

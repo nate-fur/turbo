@@ -9,12 +9,12 @@ import type { SidebarMenuItem } from "./types";
 import { getSidebarConfig } from "./configs";
 import { Collapse, Drawer, List, ListItem, SubListItem } from "./ListItem";
 
-type SidebarProps = {
+interface SidebarProps {
   open: boolean;
   onToggle: () => void;
   variant?: "persistent" | "temporary";
   sidebarType?: "sales" | "dashboard";
-};
+}
 
 const DRAWER_WIDTH_EXPANDED = 280;
 const DRAWER_WIDTH_COLLAPSED = 80;
@@ -75,7 +75,7 @@ export default function Sidebar({
   };
 
   const renderMenuItem = (item: SidebarMenuItem) => {
-    const isExpanded = expandedItems[item.id] || false;
+    const isExpanded = expandedItems[item.id] ?? false;
     const isActiveMainItem = activeMainItem === item.id;
     const hasActiveSubItem =
       item.expandable &&

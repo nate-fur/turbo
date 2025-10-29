@@ -3,12 +3,12 @@
 import { use } from "react";
 import { ProfileForm } from "@/components/forms/ProfileForm";
 
-type Props = {
+interface Props {
   params: Promise<{
     locale: string;
     palette?: any;
   }>;
-};
+}
 
 export default function ProfilePage({ params }: Props) {
   const { locale } = use(params);

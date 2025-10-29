@@ -11,6 +11,10 @@ import {
 
 import type { AuthContextType, User } from "./types";
 
+interface AuthResponse {
+  user: User;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -30,7 +34,7 @@ export function AuthProvider({
     try {
       const response = await fetch(`${authEndpoint}/me`);
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as AuthResponse;
         setUser(data.user);
       } else {
         setUser(null);
@@ -63,7 +67,7 @@ export function AuthProvider({
         throw new Error("Login failed");
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as AuthResponse;
       // Set immediate user from login response then refresh auth state
       setUser(data.user);
       // Trigger a check to /api/auth/me to ensure server-side cookies (vendor_payload) are set
@@ -75,6 +79,7 @@ export function AuthProvider({
         console.error("checkAuth after login failed:", err);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authEndpoint]);
 
   const logout = useMemo(() => {

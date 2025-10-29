@@ -9,7 +9,7 @@ import { Box } from "@mui/material";
 import { FormActions } from "./FormActions";
 import { ProfileSectionHeaders } from "./ProfileSectionHeader";
 
-type Props = {
+interface Props {
   formData: Record<string, string>;
   errors: FormErrors;
   isEditing: boolean;
@@ -19,7 +19,7 @@ type Props = {
   onPasswordEdit: () => void;
   onSubmit: () => void;
   onCancel: () => void;
-};
+}
 
 export function AccountInformation({
   formData,

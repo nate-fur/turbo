@@ -24,14 +24,14 @@ import { useTheme } from "@mui/material/styles";
 
 import { useAuth } from "@acme/auth/client";
 
-type Props = {
+interface Props {
   /**
    * Injected by the documentation to work in an iframe.
    * You won't need it on your project.
    */
   windowAction?: () => Window;
   mountains?: any[]; // Add the mountains prop
-};
+}
 
 const drawerWidth = 240;
 

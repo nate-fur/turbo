@@ -24,15 +24,15 @@ export const useEffectiveLocale = (explicitLocale?: string): string => {
 };
 
 // Generic hook state interface
-export type HookState<T> = {
+export interface HookState<T> {
   data: T;
   loading: boolean;
   error: string | null;
-};
+}
 
 // Generic hook for fetching a single item
-export type SingleHookState<T> = {
+export interface SingleHookState<T> {
   data: T | null;
   loading: boolean;
   error: string | null;
-};
+}

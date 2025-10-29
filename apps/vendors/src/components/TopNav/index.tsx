@@ -11,7 +11,7 @@ import { DropdownMenu, MobileDrawerMenu } from "./Menu";
 import NavigationTabs from "./Tabs";
 import VendorLogo from "./VendorLogo";
 
-type User = {
+interface User {
   id: number;
   documentId: string;
   name: string;
@@ -22,7 +22,7 @@ type User = {
     url: string;
     name: string;
   };
-};
+}
 
 const drawerWidth = 240;
 

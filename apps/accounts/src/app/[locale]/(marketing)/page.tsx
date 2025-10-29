@@ -7,9 +7,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Button } from "@acme/ui/components/button";
 
-type IIndexProps = {
+interface IIndexProps {
   params: Promise<{ locale: string; palette: any }>;
-};
+}
 
 export async function generateMetadata(props: IIndexProps): Promise<Metadata> {
   const { locale } = await props.params;
@@ -54,7 +54,7 @@ export default async function Index(props: IIndexProps) {
       {hasValidVendor && (
         <Button asChild variant="link" size="sm" className="mt-4">
           <Link
-            href={Env.NEXT_PUBLIC_VENDORS_URL || "/vendor"}
+            href={Env.NEXT_PUBLIC_VENDORS_URL ?? "/vendor"}
             target="_blank"
             rel="noopener noreferrer"
           >

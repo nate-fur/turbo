@@ -1,6 +1,7 @@
 "use client";
 
-import { TextField as MUITextField, TextFieldProps } from "@mui/material";
+import type { TextFieldProps } from "@mui/material";
+import { TextField as MUITextField } from "@mui/material";
 
 export function TextField(props: TextFieldProps) {
   return (

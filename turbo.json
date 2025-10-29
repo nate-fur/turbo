@@ -45,6 +45,6 @@
       "interactive": true
     }
   },
-  "globalEnv": ["AUTH_SECRET"],
+  "globalEnv": ["AUTH_SECRET", "COOKIE_DOMAIN"],
   "globalPassThroughEnv": ["NODE_ENV", "CI", "npm_lifecycle_event"]
 }

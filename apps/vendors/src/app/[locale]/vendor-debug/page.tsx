@@ -8,7 +8,7 @@ export default function VendorDebugPage() {
   const [debugInfo, setDebugInfo] = useState<any>({});
   const [testResult, setTestResult] = useState<any>(null);
 
-  const loadDebugInfo = useCallback(() => {
+  useEffect(() => {
     // Get debug information
     const allCookies = document.cookie;
     const cookiesArray = allCookies.split(";").map((c) => c.trim());
@@ -23,22 +23,17 @@ export default function VendorDebugPage() {
       return name;
     });
 
-    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setDebugInfo({
-      allCookies: allCookies || "No cookies found",
+      allCookies: allCookies ?? "No cookies found",
       cookiesArray,
       cookieNames,
       expectedCookieName: COOKIE_NAMES.ACCESS_TOKEN,
-      accessToken: accessToken || "No access token found",
+      accessToken: accessToken ?? "No access token found",
       strapiUrl: "STRAPI_URL is server-side only (check API route)",
       currentUrl: window.location.href,
       domain: window.location.hostname,
     });
   }, []);
-
-  useEffect(() => {
-    loadDebugInfo();
-  }, [loadDebugInfo]);
 
   const testVendorRBAC = async () => {
     console.error("Testing vendor RBAC...");

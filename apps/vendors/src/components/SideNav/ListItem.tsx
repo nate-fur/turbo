@@ -11,7 +11,7 @@ import {
   ListItemText,
 } from "@mui/material";
 
-type CustomListItemProps = {
+interface CustomListItemProps {
   icon: React.ReactNode;
   text: string;
   onClick: () => void;
@@ -19,7 +19,7 @@ type CustomListItemProps = {
   active: boolean;
   expandable?: boolean;
   expanded?: boolean;
-};
+}
 
 const CustomListItem = (props: CustomListItemProps) => {
   const {
@@ -87,13 +87,13 @@ const CustomListItem = (props: CustomListItemProps) => {
   );
 };
 
-type CustomSubListItemProps = {
+interface CustomSubListItemProps {
   text: string;
   icon?: React.ReactNode;
   onClick: () => void;
   active: boolean;
   collapsed?: boolean;
-};
+}
 
 const CustomSubListItem = (props: CustomSubListItemProps) => {
   const { text, icon, onClick, active, collapsed = false } = props;

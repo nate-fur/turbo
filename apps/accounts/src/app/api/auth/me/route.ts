@@ -45,8 +45,8 @@ export async function GET() {
         }
         const payload = {
           documentId: vendor?.documentId,
-          logoURL: vendor?.logo?.url || "",
-          name: vendor?.name || "",
+          logoURL: vendor?.logo?.url ?? "",
+          name: vendor?.name ?? "",
         };
 
         cookieStore.set(COOKIE_NAMES.VENDOR_PAYLOAD, JSON.stringify(payload), {
@@ -57,11 +57,11 @@ export async function GET() {
 
     const userInfo = {
       email: user.email,
-      firstName: user?.personal?.firstName || "",
-      lastName: user?.personal?.lastName || "",
-      dob: user?.personal?.dob || "",
-      phone: user?.personal?.phone || "",
-      gender: user?.personal?.gender || "",
+      firstName: user?.personal?.firstName ?? "",
+      lastName: user?.personal?.lastName ?? "",
+      dob: user?.personal?.dob ?? "",
+      phone: user?.personal?.phone ?? "",
+      gender: user?.personal?.gender ?? "",
     };
 
     return NextResponse.json({ user: userInfo });

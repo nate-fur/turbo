@@ -6,7 +6,7 @@
 // type ThemeContextProps = {
 //   theme: ThemeType;
 // };
-export type ThemeType = {
+export interface ThemeType {
   colors: {
     primary: string;
     secondary: string;
@@ -26,7 +26,7 @@ export type ThemeType = {
     // Add other palette colors as needed
   };
   // Add other theme properties like fonts, spacing, etc.
-};
+}
 
 export const theme: ThemeType = {
   colors: {

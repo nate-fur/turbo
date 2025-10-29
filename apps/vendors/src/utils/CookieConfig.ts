@@ -1,13 +1,13 @@
 import { Env } from "@/libs/Env";
 
-export type CookieOptions = {
+export interface CookieOptions {
   httpOnly?: boolean;
   secure?: boolean;
   sameSite?: "strict" | "lax" | "none";
   path?: string;
   domain?: string;
   maxAge?: number;
-};
+}
 
 /**
  * Get standardized cookie options for cross-subdomain authentication
@@ -17,7 +17,7 @@ export type CookieOptions = {
  */
 export function getAuthCookieOptions(
   maxAge?: number,
-  httpOnly: boolean = true,
+  httpOnly = true,
 ): CookieOptions {
   return {
     httpOnly, // Prevents XSS attacks when true

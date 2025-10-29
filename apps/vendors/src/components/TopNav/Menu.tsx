@@ -22,7 +22,7 @@ import {
 
 import NavigationTabs from "./Tabs";
 
-type User = {
+interface User {
   id: number;
   documentId: string;
   name: string;
@@ -33,19 +33,19 @@ type User = {
     url: string;
     name: string;
   };
-};
+}
 
-type MenuProps = {
+interface MenuProps {
   user: User | null;
   onClose?: () => void;
-};
+}
 
-type MobileDrawerProps = {
+interface MobileDrawerProps {
   user: User | null;
   container?: (() => HTMLElement) | undefined;
   drawerWidth: number;
   showButton?: boolean;
-};
+}
 
 export function MobileDrawerMenu({
   user,
