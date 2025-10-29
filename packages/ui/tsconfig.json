@@ -9,5 +9,11 @@
     "plugins": [{ "name": "next" }]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", ".next", "eslint.config.ts", "../../tooling"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next",
+    "eslint.config.ts",
+    "../../tooling"
+  ]
 }

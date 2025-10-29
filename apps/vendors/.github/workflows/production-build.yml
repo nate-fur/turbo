@@ -1,0 +1,240 @@
+name: Production Build and Deploy
+env:
+  ECR_REPOSITORY: snowclub-production-vendors
+  AWS_DEFAULT_REGION: us-west-2
+  ECS_CLUSTER_NAME: snowclub-production
+  ECS_SERVICE_NAME: snowclub-production-vendors
+  DOCKER_TAG: production
+  NODE_ENV: production
+  STRAPI_URL: https://api.mysnowclub.com
+  COOKIE_DOMAIN: .mysnowclub.com
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  production-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ vars.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 22.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: yarn
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          echo "✅ Dependencies installed"
+
+      - name: Build Next.js application
+        env:
+          STRAPI_URL: ${{ env.STRAPI_URL }}
+          COOKIE_DOMAIN: ${{ env.COOKIE_DOMAIN }}
+        run: |
+          echo "🏗️ Building application for production..."
+          yarn build
+          echo "✅ Production build completed"
+
+      - name: Build Docker and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG}}
+          provenance: false
+
+      - name: Verify build outputs
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "❌ Build failed: .next directory not found"
+            exit 1
+          fi
+
+          if [ ! -f ".next/BUILD_ID" ]; then
+            echo "❌ Build failed: BUILD_ID not found"
+            exit 1
+          fi
+
+          echo "✅ Build completed successfully"
+          echo "Build ID: $(cat .next/BUILD_ID)"
+
+          # Check for common build artifacts
+          if [ -d ".next/static" ]; then
+            echo "✅ Static assets generated"
+            echo "Static assets size: $(du -sh .next/static/ | cut -f1)"
+          fi
+
+          if [ -d ".next/server" ]; then
+            echo "✅ Server-side code generated"
+          fi
+
+      - name: Build size analysis
+        run: |
+          echo "📦 Production build size analysis:"
+          echo "Total build size: $(du -sh .next/ | cut -f1)"
+          echo "Static assets: $(du -sh .next/static/ 2>/dev/null | cut -f1 || echo 'N/A')"
+          echo "Server bundle: $(du -sh .next/server/ 2>/dev/null | cut -f1 || echo 'N/A')"
+
+          # List largest files
+          echo ""
+          echo "📋 Largest build files:"
+          find .next -type f -size +1M -exec ls -lh {} \; | head -10 || echo "No large files found"
+
+      - name: Production Build Summary
+        if: always()
+        run: |
+          echo "## 🚀 Production Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Build Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Next.js Version**: 15.4.6" >> $GITHUB_STEP_SUMMARY
+          echo "**Node.js Version**: 22.18.0" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Tool**: Yarn + Next.js" >> $GITHUB_STEP_SUMMARY
+          echo "**API URL**: https://api-c58465a35bc44fcbb4ecb5e88ff648d9.snowbus.com/rest-api" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Build ID**: $(cat .next/BUILD_ID 2>/dev/null || echo 'N/A')" >> $GITHUB_STEP_SUMMARY
+  restart-aws-service:
+    needs: [production-build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # expose the aws update result as a job output (base64 encoded to be safe)
+    outputs:
+      deployment-result: ${{ steps.force-deploy.outputs.deployment_result }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ vars.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Force new ECS deployment
+        id: force-deploy
+        run: |
+          set -euo pipefail
+          echo "Triggering ECS service update..."
+          # Capture AWS CLI JSON output (if any) and base64 encode it to safely pass as a job output
+          RESP=$(aws ecs update-service \
+            --cluster "${{ env.ECS_CLUSTER_NAME }}" \
+            --service "${{ env.ECS_SERVICE_NAME }}" \
+            --force-new-deployment \
+            --region "${{ env.AWS_DEFAULT_REGION }}" \
+            --output json 2>&1) || true
+          if [ -z "$RESP" ]; then
+            echo "deployment_result=" >> $GITHUB_OUTPUT
+          else
+            echo "deployment_result=$(printf '%s' "$RESP" | base64 -w0)" >> $GITHUB_OUTPUT
+          fi
+
+  # Slack notification job
+  slack-notification:
+    needs: [production-build, restart-aws-service]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine overall status
+        id: status
+        run: |
+          if [ "${{ needs.production-build.result }}" == "success" ] && [ "${{ needs.restart-aws-service.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_text=Success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "status_emoji=❌" >> $GITHUB_OUTPUT
+            echo "status_text=Failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.status.outputs.status_emoji }} Production Build ${{ steps.status.outputs.status_text }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n<https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}|${{ github.ref_name }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\nProduction Environment"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ steps.status.outputs.status_text }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Build:* ${{ needs.production-build.result == 'success' && '✅ Passed' || '❌ Failed' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Deployment:* ${{ needs.restart-aws-service.result == 'success' && '✅ Deployed' || '❌ Failed' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

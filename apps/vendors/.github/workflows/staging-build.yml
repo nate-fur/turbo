@@ -1,0 +1,298 @@
+name: Staging Build and Deploy Check
+env:
+  ECR_REPOSITORY: snowclub-staging-vendors
+  DOCKER_TAG: staging
+  AWS_DEFAULT_REGION: us-west-2
+  NODE_ENV: production
+  ECS_CLUSTER_NAME: snowclub-staging
+  ECS_SERVICE_NAME: snowclub-staging-vendors
+  STRAPI_URL: https://api.stg.mysnowclub.com
+  COOKIE_DOMAIN: .stg.mysnowclub.com
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  lint-and-build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ vars.STAGING_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 22.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: yarn
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile --production=false
+          echo "✅ Dependencies installed"
+
+      - name: Check TypeScript compilation
+        run: |
+          echo "🔍 Running TypeScript compilation check..."
+          yarn check:types
+          echo "🔍 TypeScript compilation completed"
+        continue-on-error: false
+
+      - name: Run ESLint
+        run: yarn lint
+        continue-on-error: false
+
+      - name: Build Next.js application
+        env:
+          STRAPI_URL: ${{ env.STRAPI_URL }}
+          COOKIE_DOMAIN: ${{ env.COOKIE_DOMAIN }}
+        run: |
+          echo "🏗️ Building application for staging environment..."
+          yarn build
+          echo "✅ Build completed"
+
+      - name: Build Docker and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG}}
+          provenance: false
+
+      - name: Verify build outputs
+        run: |
+          echo "✅ Build completed successfully"
+          echo "Build ID: $(cat .next/BUILD_ID)"
+
+          # Check for common build artifacts
+          if [ -d ".next/static" ]; then
+            echo "✅ Static assets generated"
+          fi
+
+          if [ -d ".next/server" ]; then
+            echo "✅ Server-side code generated"
+          fi
+
+      - name: Check bundle size (informational)
+        run: |
+          if [ -f ".next/analyze.json" ]; then
+            echo "Bundle analysis available"
+          fi
+
+          # Display size of key directories
+          echo "📦 Build size summary:"
+          du -sh .next/ 2>/dev/null || echo "Could not measure .next size"
+          du -sh .next/static/ 2>/dev/null || echo "Could not measure static assets size"
+
+  # Security and quality checks
+  security-audit:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --production=false
+
+      - name: Run security audit
+        run: |
+          yarn audit --audit-level=high || echo "Security vulnerabilities found - please review"
+
+      - name: Check for outdated packages (informational)
+        run: |
+          echo "📊 Checking for outdated packages:"
+          yarn outdated || true
+
+  restart-aws-service:
+    needs: [lint-and-build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # expose the aws update result as a job output (base64 encoded to be safe)
+    outputs:
+      deployment-result: ${{ steps.force-deploy.outputs.deployment_result }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ vars.STAGING_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Force new ECS deployment
+        id: force-deploy
+        run: |
+          set -euo pipefail
+          echo "Triggering ECS service update..."
+          # Capture AWS CLI JSON output (if any) and base64 encode it to safely pass as a job output
+          RESP=$(aws ecs update-service \
+            --cluster "${{ env.ECS_CLUSTER_NAME }}" \
+            --service "${{ env.ECS_SERVICE_NAME }}" \
+            --force-new-deployment \
+            --region "${{ env.AWS_DEFAULT_REGION }}" \
+            --output json 2>&1) || true
+          if [ -z "$RESP" ]; then
+            echo "deployment_result=" >> $GITHUB_OUTPUT
+          else
+            echo "deployment_result=$(printf '%s' "$RESP" | base64 -w0)" >> $GITHUB_OUTPUT
+          fi
+
+  # Summary job
+  build-summary:
+    needs: [lint-and-build, security-audit, restart-aws-service]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## 🚀 Staging Build Summary" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.lint-and-build.result }}" == "success" ]; then
+            echo "✅ **Lint and Build**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Lint and Build**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.security-audit.result }}" == "success" ]; then
+            echo "✅ **Security Audit**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Security Audit**: Issues found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: Staging" >> $GITHUB_STEP_SUMMARY
+          echo "**Next.js Version**: 15.5.3" >> $GITHUB_STEP_SUMMARY
+          echo "**Node.js Version**: 22.18.0" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Tool**: Yarn + Next.js" >> $GITHUB_STEP_SUMMARY
+          echo "**API URL**: https://api.stg.mysnowclub.com" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          # Include the deployment result from the restart job (if available)
+          if [ -n "${{ needs.restart-aws-service.outputs.deployment-result }}" ]; then
+            echo "**Deployment Result (ECS update-service)**:" >> $GITHUB_STEP_SUMMARY
+            # Decode the base64 payload - print first 2000 chars to avoid overly long summaries
+            echo "$(printf '%s' '${{ needs.restart-aws-service.outputs.deployment-result }}' | base64 --decode | sed -n '1,200p')" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Deployment Result**: Not available or empty" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Slack notification job
+  slack-notification:
+    needs: [lint-and-build, security-audit, restart-aws-service]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine overall status
+        id: status
+        run: |
+          if [ "${{ needs.lint-and-build.result }}" == "success" ] && [ "${{ needs.restart-aws-service.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_text=Success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "status_emoji=❌" >> $GITHUB_OUTPUT
+            echo "status_text=Failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.status.outputs.status_emoji }} Staging Build ${{ steps.status.outputs.status_text }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n<https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}|${{ github.ref_name }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\n<https://internal-newdev1.snowbus.com|Staging Environment>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ steps.status.outputs.status_text }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Build:* ${{ needs.lint-and-build.result == 'success' && '✅ Passed' || '❌ Failed' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Security Audit:* ${{ needs.security-audit.result == 'success' && '✅ Passed' || '⚠️ Issues found' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Deployment:* ${{ needs.restart-aws-service.result == 'success' && '✅ Deployed' || '❌ Failed' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

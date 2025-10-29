@@ -1,0 +1,45 @@
+{
+  "RootLayout": {
+    "home_link": "Accueil",
+    "about_link": "A propos",
+    "sign_in_link": "Se connecter",
+    "sign_up_link": "S'inscrire"
+  },
+  "BaseTemplate": {
+    "description": "Code de démarrage pour Next.js avec Tailwind CSS",
+    "made_with": "Fait avec <author></author>."
+  },
+  "Index": {
+    "meta_title": "MySnowClub - Vendors",
+    "meta_description": "MySnowClub - Vendors est le code de démarrage parfait pour votre projet. Construisez votre application React avec le framework Next.js."
+  },
+  "About": {
+    "meta_title": "A propos",
+    "meta_description": "A propos description",
+    "about_paragraph": "Bienvenue sur notre page À propos ! Nous sommes une équipe de passionnés et dévoués à la création de logiciels.",
+    "translation_powered_by": "Traduction propulsée par"
+  },
+  "Dashboard": {
+    "meta_title": "Tableau de bord",
+    "alternative_message": "Vous voulez créer votre SaaS plus rapidement en utilisant la même stack ? Essayez <url></url>."
+  },
+  "Sales": {
+    "meta_title": "MySnowClub - Ventes",
+    "meta_description": "Bienvenue sur notre page de ventes! Ici, vous pouvez voir vos données de ventes et vos analyses."
+  },
+  "DashboardLayout": {
+    "dashboard_link": "Tableau de bord",
+    "user_profile_link": "Gérer votre compte",
+    "sign_out": "Se déconnecter"
+  },
+  "SignIn": {
+    "invalid_email": "Adresse courriel ou mot de passe invalide",
+    "sign_in": "Se connecter",
+    "email": "Adresse courriel",
+    "password": "Mot de passe"
+  },
+  "Navigation": {
+    "dashboard_tab": "Tableau de bord",
+    "sales_tab": "Ventes"
+  }
+}

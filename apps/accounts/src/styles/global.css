@@ -1,0 +1,20 @@
+@import "@acme/ui/globals.css";
+
+@font-face {
+  font-family: "crapFont";
+  src: url("/assets/fonts/Cutthecrap.eot");
+  /* IE9 Compat Modes */
+  src:
+    url("/assets/fonts/Cutthecrap.eot?#iefix") format("embedded-opentype"),
+    /* IE6-IE8 */ url("/assets/fonts/Cutthecrap.woff2") format("woff2"),
+    /* Super Modern Browsers */ url("/assets/fonts/Cutthecrap.woff")
+      format("woff"),
+    /* Pretty Modern Browsers */ url("/assets/fonts/Cutthecrap.ttf")
+      format("truetype");
+  /* Safari, Android, iOS */
+}
+
+:root {
+  --brand-primary-blue: rgb(113, 171, 184);
+  --brand-primary-blue-600: rgb(113, 171, 184, 0.6);
+}

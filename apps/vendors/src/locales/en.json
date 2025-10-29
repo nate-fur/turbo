@@ -1,0 +1,45 @@
+{
+  "RootLayout": {
+    "home_link": "Home",
+    "about_link": "About",
+    "sign_in_link": "Sign in",
+    "sign_up_link": "Sign up"
+  },
+  "BaseTemplate": {
+    "description": "Next.js Boilerplate with Tailwind CSS",
+    "made_with": "Made with <author></author>."
+  },
+  "Index": {
+    "meta_title": "MySnowClub - Vendors",
+    "meta_description": "My Snow Club Vendors"
+  },
+  "About": {
+    "meta_title": "About",
+    "meta_description": "About description",
+    "about_paragraph": "Welcome to our About page! We are a team of passionate and dedicated software creators.",
+    "translation_powered_by": "Translation powered by"
+  },
+  "Dashboard": {
+    "meta_title": "Dashboard",
+    "alternative_message": "Want to create your SaaS faster using the same stack? Try <url></url>."
+  },
+  "Sales": {
+    "meta_title": "Sales",
+    "meta_description": "Welcome to our sales page! Here you can view your sales data and analytics."
+  },
+  "DashboardLayout": {
+    "dashboard_link": "Dashboard",
+    "user_profile_link": "Manage your account",
+    "sign_out": "Sign out"
+  },
+  "SignIn": {
+    "invalid_email": "Invalid email or password",
+    "sign_in": "Sign In",
+    "email": "Email Address",
+    "password": "Password"
+  },
+  "Navigation": {
+    "dashboard_tab": "Dashboard",
+    "sales_tab": "Sales"
+  }
+}
