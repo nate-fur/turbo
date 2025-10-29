@@ -1,10 +1,11 @@
 import type { VariantProps } from "class-variance-authority";
+import type * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
-import { Slot as SlotPrimitive } from "radix-ui";
 
-import { cn } from "@acme/ui";
+import { cn } from "@acme/ui/lib/utils";
 
-export const buttonVariants = cva(
+const buttonVariants = cva(
   "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
@@ -17,8 +18,7 @@ export const buttonVariants = cva(
           "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border shadow-xs",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs",
-        ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        ghost: "hover:bg-accent/20 hover:text-accent dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -35,7 +35,7 @@ export const buttonVariants = cva(
   },
 );
 
-export function Button({
+function Button({
   className,
   variant,
   size,
@@ -45,7 +45,7 @@ export function Button({
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
   }) {
-  const Comp = asChild ? SlotPrimitive.Slot : "button";
+  const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
@@ -55,3 +55,5 @@ export function Button({
     />
   );
 }
+
+export { Button, buttonVariants };

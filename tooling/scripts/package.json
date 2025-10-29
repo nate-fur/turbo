@@ -1,0 +1,16 @@
+{
+  "name": "@acme/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "license": "PROPRIETARY",
+  "type": "module",
+  "bin": {
+    "env-sync": "./env-sync.js"
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules .turbo .cache"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
